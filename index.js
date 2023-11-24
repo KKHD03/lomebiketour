@@ -2,7 +2,9 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 
-const app = express();
+const app = express()
+app.use(express.json());
+
 const port = 3000;
 
 // Configure nodemailer with your email provider settings
@@ -15,16 +17,21 @@ var transporter = nodemailer.createTransport({
   port: 587
 });
 
-app.get('/notification', async (req, res) => {
+app.post('/notification', async (req, res) => {
+
   try {
     // Generate QR code
     const lines = [];
 
-    for (const key in req.body) {
-      if (req.body.hasOwnProperty(key)) {
-        lines.push(`${key}: ${req.body[key]}`);
-      }
-    }
+    lines.push(`tx_reference: ${req.body.tx_reference}`);
+    lines.push(`identifier: ${req.body.identifier.split('_')[1]}`);
+    lines.push(`payment_reference: ${req.body.payment_reference}`);
+    lines.push(`amount: ${req.body.amount}`);
+    lines.push(`datetime: ${req.body.datetime}`);
+    lines.push(`payment_method: ${req.body.payment_method}`);
+    lines.push(`phone_number: ${req.body.phone_number}`);
+
+    console.log(lines)
     const qrCodeText = lines.join('\n');
     const qrCodeDataURL = await QRCode.toDataURL(qrCodeText);
 
@@ -110,7 +117,7 @@ app.get('/notification', async (req, res) => {
                     <img src="cid:${contentID}" width="250" alt="QR Code" />
                   </div>
                   <div class="text-center mt-4">
-                      <p>Merci pour votre achat !</p>
+                      <p style="color: black">Merci pour votre achat !</p>
                       <a href="https://www.lomebiketour.com" class="main-btn">REVENIR SUR LE SITE</a>
                   </div>
                 </div>
